@@ -54,7 +54,6 @@ void init(int argc, char **argv) {
 		if(optarg!= NULL && optarg[0]=='=' && optarg[1]!='\0'){
 			optarg++;
 		}
-
 		switch (c) {
 		case 's':
 			printf("option -s o number-separator con valor: %s\n", optarg);
@@ -92,45 +91,63 @@ void init(int argc, char **argv) {
 
 		c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	}
-
-
 }
 
 void escribir_archivo_en_stdout(FILE* fd) {
+	// se hace rewind poruque si es cargado desde la stdin, el puntero queda apuntando al final
+	rewind(fd);
+
+	long line_number = starting_line_number;
+	char anterior = ' ';
+
 	char c = fgetc(fd);
+	if (c != EOF) {
+		printf("%lu%s", line_number, number_peratator);
+	}
+
 	while (c != EOF) {
-		printf("%c", c);
+		if (non_empty != true || anterior != '\n' || c != '\n') {
+			printf("%c", c);
+			if (c == '\n') {
+				line_number += line_increment;
+				printf("%lu%s", line_number, number_peratator);
+			}
+		}
+		anterior = c;
 		c = fgetc(fd);
 	}
-}
 
+}
+/* Funcion encargada de procesar la lista de archivos y los - */
 void procesar_archivos(int optind, int argc, char* argv[]) {
-	/* Print any remaining command line arguments (not options). */
 	if (optind < argc) {
 		int aux = optind;
-		printf("elementos que se consideran archivos: \n");
+		printf("Elementos que se consideran archivos: \n");
 		while (optind < argc) {
 			printf("%s\n", argv[optind++]);
 		}
+		printf("\n");
 		optind = aux;
 		while (optind < argc) {
-			char temp[50];
+			char temp[500];
+			FILE * file = NULL;
 			if (argv[optind][0] == '-') {
-				printf("123456789\n");
-				while(!feof(stdin)){
-
-					scanf("%s",temp);
-					printf("%s\n",temp);
+				file = tmpfile();
+				scanf("%s", temp);
+				while (!feof(stdin)) {
+					fprintf(file, "%s", temp);
+					scanf("%s", temp);
 				}
 			} else {
-				FILE* fd = fopen(argv[optind], "r");
-				if (fd == NULL) {
-					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ",
-							argv[optind]);
+				file = fopen(argv[optind], "r");
+				if (file == NULL) {
+					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ", argv[optind]);
 					perror("");
-				} else {
-					escribir_archivo_en_stdout(fd);
 				}
+			}
+			if (file != NULL) {
+				escribir_archivo_en_stdout(file);
+				fclose(file);
 			}
 			optind++;
 		}
@@ -146,9 +163,9 @@ int main(int argc, char **argv) {
 		printf("++++++++++++++++++\nDEBUG IS ON\n");
 		printf("number_peratator:'%s'\n", number_peratator);
 		printf("starting_line_number:'%lu'\n", starting_line_number);
-		printf("line_increment:'%i'\n", line_increment);
+		printf("line_increment:'%d'\n", line_increment);
 		printf("non_empty:'%s'\n", (non_empty == 0) ? "true" : "false");
-		printf("join_blank_lines:'%i'\n", join_blank_lines);
+		printf("join_blank_lines:'%d'\n", join_blank_lines);
 		printf("++++++++++++++++++\n");
 	}
 
