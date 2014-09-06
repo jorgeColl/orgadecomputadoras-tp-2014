@@ -149,15 +149,9 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 		}
 		optind = aux;
 		while (optind < argc) {
-			char temp[500];
 			FILE * file = NULL;
 			if (argv[optind][0] == '-') {
-				file = tmpfile();
-				scanf("%s", temp);
-				while (!feof(stdin)) {
-					fprintf(file, "%s", temp);
-					scanf("%s", temp);
-				}
+				file = stdin;
 			} else {
 				file = fopen(argv[optind], "r");
 				if (file == NULL) {
