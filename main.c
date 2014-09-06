@@ -98,41 +98,42 @@ void escribir_archivo_en_stdout(FILE* fd) {
 	rewind(fd);
 
 	long line_number = starting_line_number;
-	char anterior = ' ';
+	char anterior = '\n';
 	int cantidad_espacios = 0;
 
 	char c = fgetc(fd);
-	if (c != EOF) {
-		printf("%lu%s", line_number, number_separator);
-	}
 
 	while (c != EOF) {
-		if (non_empty != true || anterior != '\n' || c != '\n') {
-			printf("%c", c);
-			if (c == '\n') {
-				line_number += line_increment;
-				printf("%lu%s", line_number, number_separator);
-			}
-		}
-		if (anterior == '\n' && c == '\n') {
-			// estoy en presencia de un espacio
-			cantidad_espacios++;
-			if (cantidad_espacios >= join_blank_lines) {
+		if (anterior != '\n' || c != '\n') {
+			if (cantidad_espacios != 0) {
+				//printf("cant esp distinto de 0!!");
 				cantidad_espacios = 0;
-
-				printf("%c", c);
-
-				line_number += line_increment;
+				for (int i = 0; i <= cantidad_espacios; i++) {
+					printf("%lu%s", line_number, number_separator);
+					line_number += line_increment;
+					printf("\n");
+				}
+			}
+			if (anterior == '\n' && (c != '\n' || non_empty == false)) {
 				printf("%lu%s", line_number, number_separator);
-
+				line_number += line_increment;
+			}
+			if (anterior != '\n' || c != '\n' || non_empty == false) {
+				printf("%c", c);
 			}
 		} else {
-			// recordar que es por grupo de espacios
-			// aca indico que sali de un grupo de espacios
-			cantidad_espacios = 0;
+			cantidad_espacios++;
+			if (cantidad_espacios == join_blank_lines) {
+				cantidad_espacios = 0;
+				printf("%lu%s", line_number, number_separator);
+				line_number += line_increment;
+				printf("\n");
+			}
 		}
+
 		anterior = c;
 		c = fgetc(fd);
+
 	}
 }
 /* Funcion encargada de procesar la lista de archivos y los - */
