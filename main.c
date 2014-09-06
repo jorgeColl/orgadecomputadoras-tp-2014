@@ -10,14 +10,14 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-static bool DEBUG =true;
+static bool DEBUG = false;
 static char mensaje_ayuda[]=""
- "* -s, --number-separator	(Indica el texto separador entre numero de lınea y la lınea).\n"
- "* -v, --starting-line-number	(Indica el numero de la primer lınea).\n"
- "* -i, --line-increment	(Indica el incremento entre lıneas consecutivas).\n"
- "* -t, --non-empty		(Si esta presente, solo se deben numerar las lıneas NO vacias. Caso con-trario, tambien deben numerar las lıneas vacias).\n"
- "* -l, --join-blank-lines	(Indica la cantidad de lıneas vacias a agrupar en una unica lınea).\n"
- "* -h, --help			(Imprime el mensaje de ayuda).\n";
+ "* -s, --number-separator	[requiere argumento] (Indica el texto separador entre numero de lınea y la lınea).\n"
+ "* -v, --starting-line-number	[requiere argumento] (Indica el numero de la primer lınea).\n"
+ "* -i, --line-increment 		[requiere argumento] (Indica el incremento entre lıneas consecutivas).\n"
+ "* -t, --non-empty		[NO requiere argumento] (Si esta presente, solo se deben numerar las lıneas NO vacias. Caso con-trario, tambien deben numerar las lıneas vacias).\n"
+ "* -l, --join-blank-lines	[requiere argumento] (Indica la cantidad de lıneas vacias a agrupar en una unica lınea).\n"
+ "* -h, --help			[NO requiere argumento] (Imprime el mensaje de ayuda).\n";
 
 // optarg: opcion de argumento ej --add=gg  -> optarg = gg
 
@@ -34,10 +34,10 @@ static struct option long_options[] = {
 		{ 0, 0, 0, 0 }
 };
 
-static char short_options[] = "s:v:i:t:l:h";
-static char number_peratator[10];
+static char short_options[] = "s:v:i:l:th";
+static char number_separator[10];
 static unsigned long starting_line_number = 0;
-static int line_increment = 0;
+static int line_increment = 1;
 static bool non_empty = false;
 static unsigned int join_blank_lines = 1;
 
@@ -56,27 +56,27 @@ void init(int argc, char **argv) {
 		}
 		switch (c) {
 		case 's':
-			printf("option -s o number-separator con valor: %s\n", optarg);
-			strcpy(number_peratator, optarg);
+			if(DEBUG)printf("option -s o number-separator con valor: %s\n", optarg);
+			strcpy(number_separator, optarg);
 			break;
 
 		case 'v':
-			printf("option -v o --starting-line-number con valor: %s\n",optarg);
+			if(DEBUG)printf("option -v o --starting-line-number con valor: %s\n",optarg);
 			starting_line_number = atol(optarg);
 			break;
 
 		case 'i':
-			printf("option -i o --line-increment con valor: %s\n", optarg);
+			if(DEBUG)printf("option -i o --line-increment con valor: %s\n", optarg);
 			line_increment = atoi(optarg);
 			break;
 
 		case 't':
-			printf("option -t o --non-empty\n");
+			if(DEBUG)printf("option -t o --non-empty\n");
 			non_empty = true;
 			break;
 
 		case 'l':
-			printf("option -l o --join-blank-lines con valor: %s\n", optarg);
+			if(DEBUG)printf("option -l o --join-blank-lines con valor: %s\n", optarg);
 			join_blank_lines = atoi(optarg);
 			break;
 
@@ -94,15 +94,16 @@ void init(int argc, char **argv) {
 }
 
 void escribir_archivo_en_stdout(FILE* fd) {
-	// se hace rewind poruque si es cargado desde la stdin, el puntero queda apuntando al final
+	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
 	rewind(fd);
 
 	long line_number = starting_line_number;
 	char anterior = ' ';
+	int cantidad_espacios = 0;
 
 	char c = fgetc(fd);
 	if (c != EOF) {
-		printf("%lu%s", line_number, number_peratator);
+		printf("%lu%s", line_number, number_separator);
 	}
 
 	while (c != EOF) {
@@ -110,23 +111,41 @@ void escribir_archivo_en_stdout(FILE* fd) {
 			printf("%c", c);
 			if (c == '\n') {
 				line_number += line_increment;
-				printf("%lu%s", line_number, number_peratator);
+				printf("%lu%s", line_number, number_separator);
 			}
+		}
+		if (anterior == '\n' && c == '\n') {
+			// estoy en presencia de un espacio
+			cantidad_espacios++;
+			if (cantidad_espacios >= join_blank_lines) {
+				cantidad_espacios = 0;
+
+				printf("%c", c);
+
+				line_number += line_increment;
+				printf("%lu%s", line_number, number_separator);
+
+			}
+		} else {
+			// recordar que es por grupo de espacios
+			// aca indico que sali de un grupo de espacios
+			cantidad_espacios = 0;
 		}
 		anterior = c;
 		c = fgetc(fd);
 	}
-
 }
 /* Funcion encargada de procesar la lista de archivos y los - */
 void procesar_archivos(int optind, int argc, char* argv[]) {
 	if (optind < argc) {
 		int aux = optind;
-		printf("Elementos que se consideran archivos: \n");
-		while (optind < argc) {
-			printf("%s\n", argv[optind++]);
+		if (DEBUG) {
+			printf("Elementos que se consideran archivos: \n");
+			while (optind < argc) {
+				printf("%s\n", argv[optind++]);
+			}
+			printf("\n");
 		}
-		printf("\n");
 		optind = aux;
 		while (optind < argc) {
 			char temp[500];
@@ -161,10 +180,10 @@ int main(int argc, char **argv) {
 
 	if (DEBUG) {
 		printf("++++++++++++++++++\nDEBUG IS ON\n");
-		printf("number_peratator:'%s'\n", number_peratator);
+		printf("number_peratator:'%s'\n", number_separator);
 		printf("starting_line_number:'%lu'\n", starting_line_number);
 		printf("line_increment:'%d'\n", line_increment);
-		printf("non_empty:'%s'\n", (non_empty == 0) ? "true" : "false");
+		printf("non_empty:'%s'\n", (non_empty) ? "true" : "false");
 		printf("join_blank_lines:'%d'\n", join_blank_lines);
 		printf("++++++++++++++++++\n");
 	}
