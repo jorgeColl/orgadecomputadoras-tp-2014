@@ -38,6 +38,7 @@ static char short_options[] = "s:v:i:l:th";
 static char number_separator[10];
 static unsigned long starting_line_number = 0;
 static int line_increment = 1;
+static long line_number = 0;
 static bool non_empty = false;
 static unsigned int join_blank_lines = 1;
 
@@ -97,7 +98,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
 	rewind(fd);
 
-	long line_number = starting_line_number;
+
 	char anterior = '\n';
 	int cantidad_espacios = 0;
 
@@ -138,6 +139,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 }
 /* Funcion encargada de procesar la lista de archivos y los - */
 void procesar_archivos(int optind, int argc, char* argv[]) {
+	line_number = starting_line_number;
 	if (optind < argc) {
 		int aux = optind;
 		if (DEBUG) {
