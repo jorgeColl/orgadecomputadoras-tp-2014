@@ -123,7 +123,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 			}
 		} else {
 			cantidad_espacios++;
-			if (cantidad_espacios == join_blank_lines) {
+			if (cantidad_espacios == join_blank_lines && non_empty==false) {
 				cantidad_espacios = 0;
 				printf("%lu%s", line_number, number_separator);
 				line_number += line_increment;
