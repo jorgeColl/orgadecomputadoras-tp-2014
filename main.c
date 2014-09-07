@@ -105,7 +105,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 
 	while (c != EOF) {
 		if (anterior != '\n' || c != '\n') {
-			if (cantidad_espacios != 0) {
+			if (cantidad_espacios != 0 && non_empty==false) {
 				//printf("cant esp distinto de 0!!");
 				cantidad_espacios = 0;
 				for (int i = 0; i <= cantidad_espacios; i++) {
