@@ -41,11 +41,94 @@ static int line_increment = 1;
 static long line_number = 0;
 static bool non_empty = false;
 static unsigned int join_blank_lines = 1;
+static void (*f)(FILE* fd);
 
+char leer_caracter_archivo (FILE* fd){
+	return fgetc(fd);
+}
+
+// cuando no estan presentes las opciones -t o -l
+void escribir_directo(FILE* fd) {
+	rewind(fd);
+	char anterior = '\n';
+	char c = leer_caracter_archivo(fd);
+
+	while (c != EOF) {
+		if (anterior == '\n') {
+			printf("%lu%s", line_number, number_separator);
+			line_number += line_increment;
+		}
+		printf("%c", c);
+
+		anterior = c;
+		c = leer_caracter_archivo(fd);
+	}
+}
+
+// cuando esta presente la opcion -t pero no la -l
+void escribir_con_opcion_t(FILE* fd) {
+	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
+	rewind(fd);
+
+	char anterior = '\n';
+	char c = leer_caracter_archivo(fd);
+	while (c != EOF) {
+		if (anterior != '\n' || c != '\n') {
+			if (anterior == '\n') {
+				printf("%lu%s", line_number, number_separator);
+				line_number += line_increment;
+			}
+			printf("%c", c);
+		}
+		anterior = c;
+		c = leer_caracter_archivo(fd);
+	}
+}
+
+void escribir_archivo_en_stdout(FILE* fd) {
+	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
+	rewind(fd);
+
+	char anterior = '\n';
+	int cantidad_espacios = 0;
+
+	char c = leer_caracter_archivo(fd);
+
+	while (c != EOF) {
+		if (anterior != '\n' || c != '\n') {
+			if (cantidad_espacios != 0 && non_empty==false) {
+				cantidad_espacios = 0;
+				for (int i = 0; i <= cantidad_espacios; i++) {
+					printf("%lu%s", line_number, number_separator);
+					line_number += line_increment;
+					printf("\n");
+				}
+			}
+			if (anterior == '\n' && (c != '\n' || non_empty == false)) {
+				printf("%lu%s", line_number, number_separator);
+				line_number += line_increment;
+			}
+			if (anterior != '\n' || c != '\n' || non_empty == false) {
+				printf("%c", c);
+			}
+		} else {
+			cantidad_espacios++;
+			if (cantidad_espacios == join_blank_lines && non_empty==false) {
+				cantidad_espacios = 0;
+				printf("%lu%s", line_number, number_separator);
+				line_number += line_increment;
+				printf("\n");
+			}
+		}
+
+		anterior = c;
+		c = leer_caracter_archivo(fd);
+	}
+}
 /*
  * Funcion encargada de la carga de iopciones proveniente de la llamada al programa
  */
-void init(int argc, char **argv) {
+void init(int argc, char **argv,void (**f)(FILE* fd)) {
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 	int c = getopt_long(argc, argv, short_options, long_options, &option_index);
@@ -89,54 +172,12 @@ void init(int argc, char **argv) {
 		default:
 			abort();
 		}
-
 		c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	}
+	*f = escribir_archivo_en_stdout;
 }
 
-void escribir_archivo_en_stdout(FILE* fd) {
-	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
-	rewind(fd);
 
-
-	char anterior = '\n';
-	int cantidad_espacios = 0;
-
-	char c = fgetc(fd);
-
-	while (c != EOF) {
-		if (anterior != '\n' || c != '\n') {
-			if (cantidad_espacios != 0 && non_empty==false) {
-				//printf("cant esp distinto de 0!!");
-				cantidad_espacios = 0;
-				for (int i = 0; i <= cantidad_espacios; i++) {
-					printf("%lu%s", line_number, number_separator);
-					line_number += line_increment;
-					printf("\n");
-				}
-			}
-			if (anterior == '\n' && (c != '\n' || non_empty == false)) {
-				printf("%lu%s", line_number, number_separator);
-				line_number += line_increment;
-			}
-			if (anterior != '\n' || c != '\n' || non_empty == false) {
-				printf("%c", c);
-			}
-		} else {
-			cantidad_espacios++;
-			if (cantidad_espacios == join_blank_lines && non_empty==false) {
-				cantidad_espacios = 0;
-				printf("%lu%s", line_number, number_separator);
-				line_number += line_increment;
-				printf("\n");
-			}
-		}
-
-		anterior = c;
-		c = fgetc(fd);
-
-	}
-}
 /* Funcion encargada de procesar la lista de archivos y los - */
 void procesar_archivos(int optind, int argc, char* argv[]) {
 	line_number = starting_line_number;
@@ -162,18 +203,22 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 				}
 			}
 			if (file != NULL) {
-				escribir_archivo_en_stdout(file);
+				//escribir_archivo_en_stdout(file);
+				f(file);
 				fclose(file);
 			}
 			optind++;
 		}
 		printf("\n");
+	} else {
+		f(stdin);
+		//escribir_archivo_en_stdout(stdin);
 	}
 }
 
 int main(int argc, char **argv) {
 
-	init(argc, argv);
+	init(argc, argv,&f);
 
 	if (DEBUG) {
 		printf("++++++++++++++++++\nDEBUG IS ON\n");
