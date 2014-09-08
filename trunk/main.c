@@ -43,13 +43,14 @@ static bool non_empty = false;
 static unsigned int join_blank_lines = 1;
 static void (*f)(FILE* fd);
 
-char leer_caracter_archivo (FILE* fd){
+char leer_caracter_archivo(FILE* fd) {
 	return fgetc(fd);
 }
 
 // cuando no estan presentes las opciones -t o -l
 void escribir_directo(FILE* fd) {
 	rewind(fd);
+	printf("directo");
 	char anterior = '\n';
 	char c = leer_caracter_archivo(fd);
 
@@ -65,11 +66,11 @@ void escribir_directo(FILE* fd) {
 	}
 }
 
-// cuando esta presente la opcion -t pero no la -l
+// cuando esta presente la opcion -t
 void escribir_con_opcion_t(FILE* fd) {
 	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
 	rewind(fd);
-
+	printf("opcion t\n");
 	char anterior = '\n';
 	char c = leer_caracter_archivo(fd);
 	while (c != EOF) {
@@ -84,11 +85,10 @@ void escribir_con_opcion_t(FILE* fd) {
 		c = leer_caracter_archivo(fd);
 	}
 }
-
-void escribir_archivo_en_stdout(FILE* fd) {
+//cuando esta presente la opcion -l pero no la -t
+void escribir_con_opcion_l_sin_opcion_t(FILE* fd) {
 	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
 	rewind(fd);
-
 	char anterior = '\n';
 	int cantidad_espacios = 0;
 
@@ -96,7 +96,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 
 	while (c != EOF) {
 		if (anterior != '\n' || c != '\n') {
-			if (cantidad_espacios != 0 && non_empty==false) {
+			if (cantidad_espacios != 0 && non_empty == false) {
 				cantidad_espacios = 0;
 				for (int i = 0; i <= cantidad_espacios; i++) {
 					printf("%lu%s", line_number, number_separator);
@@ -113,7 +113,7 @@ void escribir_archivo_en_stdout(FILE* fd) {
 			}
 		} else {
 			cantidad_espacios++;
-			if (cantidad_espacios == join_blank_lines && non_empty==false) {
+			if (cantidad_espacios == join_blank_lines && non_empty == false) {
 				cantidad_espacios = 0;
 				printf("%lu%s", line_number, number_separator);
 				line_number += line_increment;
@@ -129,7 +129,8 @@ void escribir_archivo_en_stdout(FILE* fd) {
  * Funcion encargada de la carga de iopciones proveniente de la llamada al programa
  */
 void init(int argc, char **argv,void (**f)(FILE* fd)) {
-	/* getopt_long stores the option index here. */
+	bool opcion_l = false;
+	*f = escribir_directo;
 	int option_index = 0;
 	int c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	while (c != -1) {
@@ -155,13 +156,14 @@ void init(int argc, char **argv,void (**f)(FILE* fd)) {
 			break;
 
 		case 't':
-			if(DEBUG)printf("option -t o --non-empty\n");
+			if (DEBUG)printf("option -t o --non-empty\n");
 			non_empty = true;
 			break;
 
 		case 'l':
 			if(DEBUG)printf("option -l o --join-blank-lines con valor: %s\n", optarg);
 			join_blank_lines = atoi(optarg);
+			opcion_l=true;
 			break;
 
 		case 'h':
@@ -174,7 +176,12 @@ void init(int argc, char **argv,void (**f)(FILE* fd)) {
 		}
 		c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	}
-	*f = escribir_archivo_en_stdout;
+
+	if (non_empty == true) {
+		*f = escribir_con_opcion_t;
+	} else if (opcion_l == true) {
+		*f = escribir_con_opcion_l_sin_opcion_t;
+	}
 }
 
 
