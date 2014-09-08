@@ -47,10 +47,9 @@ char leer_caracter_archivo(FILE* fd) {
 	return fgetc(fd);
 }
 
-// cuando no estan presentes las opciones -t o -l
+// cuando NO estan presentes las opciones -t o -l
 void escribir_directo(FILE* fd) {
 	rewind(fd);
-	printf("directo");
 	char anterior = '\n';
 	char c = leer_caracter_archivo(fd);
 
@@ -66,11 +65,10 @@ void escribir_directo(FILE* fd) {
 	}
 }
 
-// cuando esta presente la opcion -t
+// cuando esta presente la opcion -t , estando o no la opcion -l
 void escribir_con_opcion_t(FILE* fd) {
 	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
 	rewind(fd);
-	printf("opcion t\n");
 	char anterior = '\n';
 	char c = leer_caracter_archivo(fd);
 	while (c != EOF) {
@@ -96,7 +94,7 @@ void escribir_con_opcion_l_sin_opcion_t(FILE* fd) {
 
 	while (c != EOF) {
 		if (anterior != '\n' || c != '\n') {
-			if (cantidad_espacios != 0 && non_empty == false) {
+			if (cantidad_espacios != 0) {
 				cantidad_espacios = 0;
 				for (int i = 0; i <= cantidad_espacios; i++) {
 					printf("%lu%s", line_number, number_separator);
@@ -104,16 +102,15 @@ void escribir_con_opcion_l_sin_opcion_t(FILE* fd) {
 					printf("\n");
 				}
 			}
-			if (anterior == '\n' && (c != '\n' || non_empty == false)) {
+			if (anterior == '\n') {
 				printf("%lu%s", line_number, number_separator);
 				line_number += line_increment;
 			}
-			if (anterior != '\n' || c != '\n' || non_empty == false) {
-				printf("%c", c);
-			}
+			printf("%c", c);
+
 		} else {
 			cantidad_espacios++;
-			if (cantidad_espacios == join_blank_lines && non_empty == false) {
+			if (cantidad_espacios == join_blank_lines) {
 				cantidad_espacios = 0;
 				printf("%lu%s", line_number, number_separator);
 				line_number += line_increment;
@@ -210,7 +207,6 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 				}
 			}
 			if (file != NULL) {
-				//escribir_archivo_en_stdout(file);
 				f(file);
 				fclose(file);
 			}
@@ -219,7 +215,6 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 		printf("\n");
 	} else {
 		f(stdin);
-		//escribir_archivo_en_stdout(stdin);
 	}
 }
 
