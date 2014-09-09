@@ -10,6 +10,10 @@
 #include <getopt.h>
 #include <stdbool.h>
 
+char buff1[134217728];
+char buff2[134217728];
+char buff3[134217728];
+
 static bool DEBUG = false;
 static char mensaje_ayuda[]=""
  "* -s, --number-separator	[requiere argumento] (Indica el texto separador entre numero de lınea y la lınea).\n"
@@ -181,7 +185,6 @@ void init(int argc, char **argv,void (**f)(FILE* fd)) {
 	}
 }
 
-
 /* Funcion encargada de procesar la lista de archivos y los - */
 void procesar_archivos(int optind, int argc, char* argv[]) {
 	line_number = starting_line_number;
@@ -202,8 +205,14 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 			} else {
 				file = fopen(argv[optind], "r");
 				if (file == NULL) {
-					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ", argv[optind]);
+					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ",
+							argv[optind]);
 					perror("");
+				} else {
+					int a = setvbuf(file, buff1, _IOFBF, 134217728);
+					if (a != 0) {
+						fprintf(stderr, "buffer file no pudo ser creado\n");
+					}
 				}
 			}
 			if (file != NULL) {
@@ -219,6 +228,19 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 }
 
 int main(int argc, char **argv) {
+	/* seteo buffers para los streams para no interactuar directamente
+	 * con el disco y asi tener en ram gran parte del archivo
+	 * para mas referencia ir a:
+	 * http://www.cplusplus.com/reference/cstdio/setvbuf/
+	 */
+	int b = setvbuf( stdout, buff2, _IOFBF, 134217728);
+	if (b != 0) {
+		fprintf(stderr, "buffer stdout no pudo ser creado\n");
+	}
+	int c = setvbuf( stdin, buff3, _IOFBF, 134217728);
+	if (c != 0) {
+		fprintf(stderr, "buffer stdin no pudo ser creado\n");
+	}
 
 	init(argc, argv,&f);
 
