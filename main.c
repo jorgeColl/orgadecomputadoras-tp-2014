@@ -10,10 +10,7 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-char buff1[134217728];
-char buff2[134217728];
-char buff3[134217728];
-
+#define TAM 500
 static bool DEBUG = false;
 static char mensaje_ayuda[]=""
  "* -s, --number-separator	[requiere argumento] (Indica el texto separador entre numero de lınea y la lınea).\n"
@@ -45,93 +42,12 @@ static int line_increment = 1;
 static long line_number = 0;
 static bool non_empty = false;
 static unsigned int join_blank_lines = 1;
-static void (*f)(FILE* fd);
 
-char leer_caracter_archivo(FILE* fd) {
-	return fgetc(fd);
-}
-
-// cuando NO estan presentes las opciones -t o -l
-void escribir_directo(FILE* fd) {
-	rewind(fd);
-	char anterior = '\n';
-	char c = leer_caracter_archivo(fd);
-
-	while (c != EOF) {
-		if (anterior == '\n') {
-			printf("%lu%s", line_number, number_separator);
-			line_number += line_increment;
-		}
-		printf("%c", c);
-
-		anterior = c;
-		c = leer_caracter_archivo(fd);
-	}
-}
-
-// cuando esta presente la opcion -t , estando o no la opcion -l
-void escribir_con_opcion_t(FILE* fd) {
-	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
-	rewind(fd);
-	char anterior = '\n';
-	char c = leer_caracter_archivo(fd);
-	while (c != EOF) {
-		if (anterior != '\n' || c != '\n') {
-			if (anterior == '\n') {
-				printf("%lu%s", line_number, number_separator);
-				line_number += line_increment;
-			}
-			printf("%c", c);
-		}
-		anterior = c;
-		c = leer_caracter_archivo(fd);
-	}
-}
-//cuando esta presente la opcion -l pero no la -t
-void escribir_con_opcion_l_sin_opcion_t(FILE* fd) {
-	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
-	rewind(fd);
-	char anterior = '\n';
-	int cantidad_espacios = 0;
-
-	char c = leer_caracter_archivo(fd);
-
-	while (c != EOF) {
-		if (anterior != '\n' || c != '\n') {
-			if (cantidad_espacios != 0) {
-				cantidad_espacios = 0;
-				for (int i = 0; i <= cantidad_espacios; i++) {
-					printf("%lu%s", line_number, number_separator);
-					line_number += line_increment;
-					printf("\n");
-				}
-			}
-			if (anterior == '\n') {
-				printf("%lu%s", line_number, number_separator);
-				line_number += line_increment;
-			}
-			printf("%c", c);
-
-		} else {
-			cantidad_espacios++;
-			if (cantidad_espacios == join_blank_lines) {
-				cantidad_espacios = 0;
-				printf("%lu%s", line_number, number_separator);
-				line_number += line_increment;
-				printf("\n");
-			}
-		}
-
-		anterior = c;
-		c = leer_caracter_archivo(fd);
-	}
-}
 /*
- * Funcion encargada de la carga de iopciones proveniente de la llamada al programa
+ * Funcion encargada de la carga de opciones proveniente de la llamada al programa
  */
-void init(int argc, char **argv,void (**f)(FILE* fd)) {
-	bool opcion_l = false;
-	*f = escribir_directo;
+void init(int argc, char **argv) {
+	/* getopt_long stores the option index here. */
 	int option_index = 0;
 	int c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	while (c != -1) {
@@ -157,14 +73,13 @@ void init(int argc, char **argv,void (**f)(FILE* fd)) {
 			break;
 
 		case 't':
-			if (DEBUG)printf("option -t o --non-empty\n");
+			if(DEBUG)printf("option -t o --non-empty\n");
 			non_empty = true;
 			break;
 
 		case 'l':
 			if(DEBUG)printf("option -l o --join-blank-lines con valor: %s\n", optarg);
 			join_blank_lines = atoi(optarg);
-			opcion_l=true;
 			break;
 
 		case 'h':
@@ -175,13 +90,67 @@ void init(int argc, char **argv,void (**f)(FILE* fd)) {
 		default:
 			abort();
 		}
+
 		c = getopt_long(argc, argv, short_options, long_options, &option_index);
 	}
+}
 
-	if (non_empty == true) {
-		*f = escribir_con_opcion_t;
-	} else if (opcion_l == true) {
-		*f = escribir_con_opcion_l_sin_opcion_t;
+//Devuelve true si leyo una linea entera o false en caso contrario.
+bool leer_linea(FILE* fd, char* buffer){
+	if (fgets(buffer, TAM, fd) == NULL){
+		strcpy(buffer,"");
+		return true;
+	}
+	char* ptr = strchr(buffer,'\n');
+	if (ptr != NULL){
+		return true;
+	}
+	return false;
+}
+
+void imprimir_espacios_acumulados(int* cantidad_espacios){
+	int i;
+	if (non_empty == false && *cantidad_espacios > 0){
+		for(i = 0; i < *cantidad_espacios; i++){		
+			printf("%lu%s\n", line_number, number_separator);
+			line_number += line_increment;					
+		}
+		*cantidad_espacios = 0;	
+	}
+}
+
+void escribir_archivo_en_stdout(FILE* fd) {
+	// se hace rewind porque si es cargado desde la stdin, el puntero queda apuntando al final
+	rewind(fd);
+	char buffer[TAM];
+	int cantidad_espacios = 0;
+	bool linea_completa = false;	
+	while (!feof(fd)){
+		linea_completa = leer_linea(fd, buffer);
+		if (!linea_completa){
+			imprimir_espacios_acumulados(&cantidad_espacios);
+			printf("%lu%s%s", line_number, number_separator, buffer);
+			line_number += line_increment;
+			while (!linea_completa && !feof(fd)){
+				linea_completa = leer_linea(fd, buffer);
+				printf("%s", buffer);
+			}			
+		}else{
+			if (strcmp (buffer,"") == 0){				
+				imprimir_espacios_acumulados(&cantidad_espacios);
+				continue;
+			}else if(strcmp(buffer, "\n") == 0){
+				cantidad_espacios++;
+				if (cantidad_espacios == join_blank_lines){
+					cantidad_espacios = 1;
+					imprimir_espacios_acumulados(&cantidad_espacios);							
+				}
+			}else{
+				imprimir_espacios_acumulados(&cantidad_espacios);
+				printf("%lu%s%s", line_number, number_separator, buffer);
+				line_number += line_increment;					
+			}
+		}
 	}
 }
 
@@ -205,45 +174,24 @@ void procesar_archivos(int optind, int argc, char* argv[]) {
 			} else {
 				file = fopen(argv[optind], "r");
 				if (file == NULL) {
-					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ",
-							argv[optind]);
+					fprintf(stderr, "Error al tratar de abrir el archivo:'%s' ", argv[optind]);
 					perror("");
-				} else {
-					int a = setvbuf(file, buff1, _IOFBF, 134217728);
-					if (a != 0) {
-						fprintf(stderr, "buffer file no pudo ser creado\n");
-					}
 				}
 			}
 			if (file != NULL) {
-				f(file);
+				escribir_archivo_en_stdout(file);
 				fclose(file);
 			}
 			optind++;
 		}
 		printf("\n");
 	} else {
-		f(stdin);
+		escribir_archivo_en_stdout(stdin);
 	}
 }
 
 int main(int argc, char **argv) {
-	/* seteo buffers para los streams para no interactuar directamente
-	 * con el disco y asi tener en ram gran parte del archivo
-	 * para mas referencia ir a:
-	 * http://www.cplusplus.com/reference/cstdio/setvbuf/
-	 */
-	int b = setvbuf( stdout, buff2, _IOFBF, 134217728);
-	if (b != 0) {
-		fprintf(stderr, "buffer stdout no pudo ser creado\n");
-	}
-	int c = setvbuf( stdin, buff3, _IOFBF, 134217728);
-	if (c != 0) {
-		fprintf(stderr, "buffer stdin no pudo ser creado\n");
-	}
-
-	init(argc, argv,&f);
-
+	init(argc, argv);
 	if (DEBUG) {
 		printf("++++++++++++++++++\nDEBUG IS ON\n");
 		printf("number_peratator:'%s'\n", number_separator);
@@ -253,8 +201,6 @@ int main(int argc, char **argv) {
 		printf("join_blank_lines:'%d'\n", join_blank_lines);
 		printf("++++++++++++++++++\n");
 	}
-
 	procesar_archivos(optind,argc,argv);
-
 	exit(0);
 }
