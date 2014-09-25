@@ -85,6 +85,7 @@ void init(int argc, char **argv) {
 		case 'h':
 			printf("option -h o --help\n");
 			printf("%s", mensaje_ayuda);
+			exit(1);
 			break;
 
 		default:
