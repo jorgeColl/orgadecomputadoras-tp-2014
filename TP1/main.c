@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
+#include "validate.h"
 
 static struct option long_options[] = {
 		/* para cada opcion, se registra si necesita argumento y que letra devuelve getopt_long(), en caso
@@ -88,9 +89,14 @@ int main(int argc, char **argv) {
 	// a forma de debug
 	printf("%s", buff);
 
+	char* error = NULL;
 	// aqui llamar a funcion en asembly
-	// [AQUI]
+	int resultado = validate(buff,strlen(buff),&error);
+	if(resultado == 1){
+		//fprintf(stderr,"%s",error);
+	}
 
+	//free(error);
 	free(buff);
-	return 1;
+	return resultado;
 }
