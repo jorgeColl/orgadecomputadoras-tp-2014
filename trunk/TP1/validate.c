@@ -50,27 +50,34 @@ bool es_tag_sin_abrir(long cerro, long count, long pila[], char text[]) {
 	return true;
 }
 
-int validate(char* text, long tam, char** error) {
+int validate(char* text, char** error) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
 	long pila[1000];
 
 	//count cantida de tags abiertos
 	long count = 0;
 
-	int i;
-	for (i = 0; i < tam; i++) {
+	//numero de linea
+	long nro_linea = 0;
+
+	int i=0;
+	while (text[i] != '\0') {
+		if(text[i]=='\n'){
+			nro_linea++;
+		}
 		if (text[i] == '<' && text[i+1]!='\\') {
 			printf("encontre abierto %c\n",text[i+1]);
 			// guardo posicion en donde esta el inicio del tag
 			count++;
-			pila[count - 1] = i + 1;
+			pila[2 * (count - 1)] = i + 1;
+			pila[(2 * (count - 1)) + 1] = nro_linea;
 
 		} else if (text[i] == '<' && text[i + 1] == '\\') {
 			printf("encontre cerrado %c\n", text[i + 2]);
 			// verifico que este bien cerrado
 
 			// pos donde se abrio el tag
-			long abrio = pila[count - 1];
+			long abrio = pila[2*(count - 1)];
 
 			//pos donde empieza el tag que cierra
 			long cerro = i + 2;
@@ -78,31 +85,34 @@ int validate(char* text, long tam, char** error) {
 			bool son_iguales = comparar_tags(abrio, cerro, text);
 			if (son_iguales == false) {
 				// veo si el error es de tags sin abrir o de tags mal anidados
+				bool bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila, text);
 
-				bool bes_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila, text);
-				if(bes_tag_sin_abrir){
+				if(bool_es_tag_sin_abrir){
 					printf("es tag sin abrir\n");
+					printf("nro de linea:%ld\n",nro_linea);
 				}else{
 					printf("es tag mal anidado\n");
+					printf("nro de linea %ld \n",nro_linea);
 				}
 				return 1;
 			}
 			//si, esta bien cerrado
 			count--;
 		}
-
+		i++;
 	}
 	if (count > 0) {
 		// hay tags que no estan cerrados, ya que la "pila" sigue teniendo tags que no fueron cerrados
 		printf("hay tags sin cerrar, cant:%ld\n", count);
 		int i;
 		for (i = 0; i < count; i++) {
-			char c = text[pila[i]];
+			printf("linea: %ld tag: ",pila[(2*i)+1]);
+			char c = text[pila[2*i]];
 			int aux = 0;
 			while (c != '>') {
 				printf("%c", c);
 				aux++;
-				c = text[pila[i] + aux];
+				c = text[pila[2*i] + aux];
 			}
 			printf("\n");
 		}
