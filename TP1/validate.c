@@ -9,8 +9,13 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
-/* funcion que dado dos posiciones y un char*,realiza la comparacion si esas dos
+
+/* funcion auxiliar de validate, tambien implementada en assembly
+ * dado dos posiciones y un char*,realiza la comparacion si esas dos
  * posiciones tienen los mismos tags, en caso afirmativo devuelve true, en caso contrario devuelve false
+ *
+ * abrio: posicion inicial del tag1
+ * cerro: posicion inicial del tag2
  */
 bool comparar_tags(long abrio, long cerro, char* text) {
 	// desplazamiento que voy haciendo para comparar los dos tags
@@ -20,23 +25,43 @@ bool comparar_tags(long abrio, long cerro, char* text) {
 	while (text[abrio + desplazamiento] != '>' && text[cerro + desplazamiento != '>']) {
 		if (text[abrio + desplazamiento] != text[cerro + desplazamiento]) {
 			// error los tags tienen distintas letras
-			printf("error los tags tienen distintas letras: %c,%c\n",text[abrio + desplazamiento],text[cerro + desplazamiento]);
+			printf("los tags tienen distintas letras: %c,%c\n",text[abrio + desplazamiento],text[cerro + desplazamiento]);
 			return false;
 		}
 		desplazamiento++;
 	}
 	if (text[abrio + desplazamiento] == '>' && text[cerro + desplazamiento] != '>') {
 		// error el tag que abria es mas chico que el tag que cierra
-		printf("error el tag que abria es mas chico que el tag que cierra\n");
+		printf("el tag que abria es mas chico que el tag que cierra\n");
 		return false;
 	}
 	if (text[abrio + desplazamiento] != '>' && text[cerro + desplazamiento] == '>') {
 		// error el tag que abria es mas grande que el tag que cierra
-		printf("error el tag que abria es mas grande que el tag que cierra\n");
+		printf("el tag que abria es mas grande que el tag que cierra\n");
 		return false;
 	}
 
 	return true;
+}
+
+// funcion auxiliar de validate, tambien implementada en assembly
+// TODO terminar de implementar correctamente
+void write_error(int tipo_de_error, int pos_tag1, int pos_tag2,int nro_linea ,char** errmsg) {
+	switch (tipo_de_error) {
+	case 1:
+		printf("es tag sin abrir\n");
+		printf("nro de linea:%d\n",nro_linea);
+		break;
+	case 2:
+		printf("es tag mal anidado\n");
+		printf("nro de linea %d \n",nro_linea);
+		break;
+	case 3:
+		printf("hay tags sin cerrar\n");
+		break;
+	default:
+		break;
+	}
 }
 
 bool es_tag_sin_abrir(long cerro, long count, long pila[], char text[]) {
@@ -50,7 +75,7 @@ bool es_tag_sin_abrir(long cerro, long count, long pila[], char text[]) {
 	return true;
 }
 
-int validate(char* text, char** error) {
+int validate(char* text, char** errmsg) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
 	long pila[1000];
 
