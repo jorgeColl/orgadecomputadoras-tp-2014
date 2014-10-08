@@ -8,6 +8,6 @@
 #ifndef VALIDATE_H_
 #define VALIDATE_H_
 
-int validate (char* text,long tam, char** error);
+int validate (char* text,long tam, char** errmsg);
 
 #endif /* VALIDATE_H_ */
