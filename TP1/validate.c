@@ -50,7 +50,7 @@ void print_tag(char* tag, char** errmsg) {
 	(*errmsg)[tam] = '\0';
 }
 
-void print_tag(char* tag) {
+void print_tagg(char* tag) {
 	while(*tag != '>'){
 		printf("%c",*tag);
 		tag++;
@@ -60,7 +60,11 @@ void print_tag(char* tag) {
 // funcion auxiliar de validate, tambien implementada en assembly
 // TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
-	(*errmsg)[0] = '\0';
+
+	char* aux = (char*)malloc(sizeof(char)*10000);
+	(*errmsg) = aux;
+	(*errmsg)[100]='\0';
+
 	switch (tipo_de_error) {
 	case 1:
 		sprintf(*errmsg, "es tag sin abrir - nro de linea: %d - tag: ", nro_linea);
@@ -114,7 +118,7 @@ int validate(char* text, char** errmsg) {
 		}
 		if (text[i] == '<' && text[i+1]!='\\') {
 			printf("encontre abierto ");
-			print_tag(&text[i+1]);
+			print_tagg(&text[i+1]);
 			// guardo posicion en donde esta el inicio del tag
 			count++;
 			pila[2 * (count - 1)] = &text[i+1];
@@ -132,7 +136,7 @@ int validate(char* text, char** errmsg) {
 
 			// solo para debug
 			printf("encontre cerrado ");
-			print_tag(cerro);
+			print_tagg(cerro);
 
 			bool son_iguales = compare_tags(abrio, cerro);
 

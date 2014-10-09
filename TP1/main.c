@@ -9,11 +9,8 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
-//#include "validate.h"
-#include "compare_tags.h"
+#include "validate.h"
 
-/*para testing particular*/
-int compare_tags (char* abrio, char* cerro);
 
 static struct option long_options[] = {
 		/* para cada opcion, se registra si necesita argumento y que letra devuelve getopt_long(), en caso
@@ -91,17 +88,22 @@ int main(int argc, char **argv) {
 	}
 	char* buff = cargar_archivo(fd);
 
+	//temporalmente aca hasta que write
 	char* error = NULL;
+	/*write_error(1,"hola>","pepe>",3,&error);
+	printf("%s\n",error);
+	int resultado=0;
+	*/
 	// aqui llamar a funcion en asembly
-	//int resultado = validate(buff,strlen(buff),&error);
-	int resultado = compare_tags((char*)22,(char*)44);
-	printf("%d",resultado);
+	int resultado = validate(buff,strlen(buff),&error);
+
 	
 	if(resultado == 1){
-		//fprintf(stderr,"%s",error);
+		fprintf(stderr,"%s",error);
 	}
 
 	//free(error);
 	free(buff);
+
 	return resultado;
 }
