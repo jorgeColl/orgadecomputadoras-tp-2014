@@ -5,6 +5,10 @@
 #define	fp	$fp
 #endif
 
+#define a (30)
+#define b (40)
+#define ss (a+b)
+
 #define SSIZE			(8)
 
 #define	O_FP			(4)
@@ -13,7 +17,7 @@
 #define 	O_ARG0		(SSIZE)
 #define 	O_ARG1		((SSIZE) + 4)
 
-	/* int write_error(--------	*/
+	/* void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg)*/
 	.text
 	.align 	2
 	.globl	write_error
