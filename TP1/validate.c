@@ -47,39 +47,44 @@ bool comparar_tags(char* abrio, char* cerro) {
 	return true;
 }
 
-void print_tag(char* tag) {
+void print_tag(char* tag, char** errmsg) {
+	int tam = strlen(*errmsg);
 	while(*tag != '>'){
-		printf("%c",*tag);
+		(*errmsg)[tam] = *tag;
+		tam++;		
 		tag++;
 	}
-	printf("\n");
+	(*errmsg)[tam] = '\0';
 }
 
 // funcion auxiliar de validate, tambien implementada en assembly
 // TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
+	(*errmsg)[0] = '\0';
 	switch (tipo_de_error) {
 	case 1:
-		printf("es tag sin abrir");
-		printf("nro de linea:%d tag:",nro_linea);
-		print_tag(tag2);
+		sprintf(*errmsg, "es tag sin abrir - nro de linea: %d - tag: ", nro_linea);
+		print_tag(tag1, errmsg);		
 		break;
 	case 2:
-		printf("es tag mal anidado");
-		printf("nro de linea %d tag:",nro_linea);
-		print_tag(tag1);
-		printf("y tag:");
-		print_tag(tag2);
+		sprintf(*errmsg, "es tag mal anidado - nro de linea: %d - tags: ", nro_linea);
+		print_tag(tag1, errmsg);
+		int tam = strlen(*errmsg);
+		(*errmsg)[tam] = ' ';
+		(*errmsg)[tam+1] = 'y';
+		(*errmsg)[tam+2] = ' ';
+		(*errmsg)[tam+3] = '\0';
+		print_tag(tag2, errmsg);
 		break;
 	case 3:
-		printf("hay tags sin cerrar\n");
-		printf("nro de linea %d tag:",nro_linea);
-		print_tag(tag1);
+		sprintf(*errmsg, "hay tags sin cerrar - nro de linea: %d - tag: ", nro_linea);
+		print_tag(tag1, errmsg);
 		break;
 	default:
 		break;
 	}
 }
+
 
 bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 	int i;
