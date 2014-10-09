@@ -87,22 +87,15 @@ int main(int argc, char **argv) {
 		break;
 	}
 	char* buff = cargar_archivo(fd);
-
-	//temporalmente aca hasta que write
 	char* error = NULL;
 
 
-	/*write_error(1,"hola>","pepe>",3,&error);
-	printf("%s\n",error);
-	int resultado=0;
-*/
-	// aqui llamar a funcion en asembly
 	int resultado = validate(buff,&error);
 	if(resultado == 1){
 		fprintf(stderr,"%s",error);
+		free(error);
 	}
 
-	//free(error);
 	free(buff);
 
 	return resultado;
