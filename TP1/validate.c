@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
+#define ERRMSG 52
 
 /* funcion auxiliar de validate, tambien implementada en assembly
  * dado dos posiciones y un char*,realiza la comparacion si esas dos
@@ -57,12 +58,23 @@ void print_tagg(char* tag) {
 	}
 	printf("\n");
 }
+
+size_t calcular_largo(char* tag) {
+	if (tag == NULL) return 0;
+	size_t tam = 0;	
+	while(*tag != '>'){
+		tam++;		
+		tag++;
+	}
+	return tam;
+}
+
 // funcion auxiliar de validate, tambien implementada en assembly
 // TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
-
-	(*errmsg) = (char*)malloc(sizeof(char)*10000);
-	(*errmsg)[100]='\0';
+	size_t size = ERRMSG + calcular_largo(tag1) + calcular_largo(tag2);
+	(*errmsg) = (char*)malloc(sizeof(char)*size);
+	(*errmsg)[size-1]='\0';
 
 	switch (tipo_de_error) {
 	case 1:
@@ -102,7 +114,7 @@ bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 
 int validate(char* text, char** errmsg) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
-	char** pila = malloc(sizeof(char*)*strlen(text));
+	char* pila[1000];
 
 	//count cantida de tags abiertos
 	long count = 0;
