@@ -102,7 +102,7 @@ bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 
 int validate(char* text, char** errmsg) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
-	char* pila[1000];
+	char** pila = malloc(sizeof(char*)*strlen(text));
 
 	//count cantida de tags abiertos
 	long count = 0;
