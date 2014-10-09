@@ -90,14 +90,14 @@ int main(int argc, char **argv) {
 
 	//temporalmente aca hasta que write
 	char* error = NULL;
+
+
 	/*write_error(1,"hola>","pepe>",3,&error);
 	printf("%s\n",error);
 	int resultado=0;
-	*/
+*/
 	// aqui llamar a funcion en asembly
-	int resultado = validate(buff,strlen(buff),&error);
-
-	
+	int resultado = validate(buff,&error);
 	if(resultado == 1){
 		fprintf(stderr,"%s",error);
 	}
