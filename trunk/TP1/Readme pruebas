@@ -1,0 +1,4 @@
+a.txt -> OK
+b.txt -> mal anidado, nro_linea:4
+c.txt -> tag sin cerrrar, nro_linea:0
+d.txt -> tag sin abrir, nro_linea:2
