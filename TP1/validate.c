@@ -61,8 +61,7 @@ void print_tagg(char* tag) {
 // TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
 
-	char* aux = (char*)malloc(sizeof(char)*10000);
-	(*errmsg) = aux;
+	(*errmsg) = (char*)malloc(sizeof(char)*10000);
 	(*errmsg)[100]='\0';
 
 	switch (tipo_de_error) {
