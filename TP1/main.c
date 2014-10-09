@@ -54,6 +54,7 @@ char* cargar_archivo(FILE* fd) {
 		}
 	}
 	buff[cont - 1] = '\0';
+	fclose(fd);
 	return buff;
 }
 
@@ -89,7 +90,6 @@ int main(int argc, char **argv) {
 	char* buff = cargar_archivo(fd);
 	char* error = NULL;
 
-
 	int resultado = validate(buff,&error);
 	if(resultado == 1){
 		fprintf(stderr,"%s",error);
@@ -97,6 +97,5 @@ int main(int argc, char **argv) {
 	}
 
 	free(buff);
-
 	return resultado;
 }

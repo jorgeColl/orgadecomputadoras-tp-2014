@@ -25,11 +25,8 @@ int compare_tags(char* abrio, char* cerro) {
 	// desplazamiento que voy haciendo para comparar los dos tags
 	long desplazamiento = 0;
 
-	// caso comun, las dos tienen el mismo largo
 	while (abrio[desplazamiento] != '>' && cerro [ desplazamiento != '>']) {
 		if (abrio [desplazamiento] != cerro [desplazamiento]) {
-			// error los tags tienen distintas letras
-			printf("los tags tienen distintas letras: %c,%c\n",abrio[desplazamiento],cerro[desplazamiento]);
 			return 0;
 		}
 		desplazamiento++;
@@ -50,7 +47,7 @@ void print_tag(char* tag, char** errmsg) {
 	}
 	(*errmsg)[tam] = '\0';
 }
-
+// funcion de asistencia para testing
 void print_tagg(char* tag) {
 	while(*tag != '>'){
 		printf("%c",*tag);
@@ -58,6 +55,7 @@ void print_tagg(char* tag) {
 	}
 	printf("\n");
 }
+
 
 size_t calcular_largo(char* tag) {
 	if (tag == NULL) return 0;
@@ -70,7 +68,6 @@ size_t calcular_largo(char* tag) {
 }
 
 // funcion auxiliar de validate, tambien implementada en assembly
-// TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
 	size_t size = ERRMSG + calcular_largo(tag1) + calcular_largo(tag2);
 	(*errmsg) = (char*)malloc(sizeof(char)*size);
@@ -79,7 +76,7 @@ void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char*
 	switch (tipo_de_error) {
 	case 1:
 		sprintf(*errmsg, "es tag sin abrir - nro de linea: %d - tag: ", nro_linea);
-		print_tag(tag1, errmsg);		
+		print_tag(tag2, errmsg);
 		break;
 	case 2:
 		sprintf(*errmsg, "es tag mal anidado - nro de linea: %d - tags: ", nro_linea);
@@ -114,7 +111,7 @@ bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 
 int validate(char* text, char** errmsg) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
-	char* pila[1000];
+	char** pila = malloc(sizeof(char*)*strlen(text));
 
 	//count cantida de tags abiertos
 	long count = 0;
@@ -160,6 +157,7 @@ int validate(char* text, char** errmsg) {
 				} else {
 					write_error(2, abrio, cerro, nro_linea, errmsg);
 				}
+				free(pila);
 				return 1;
 			}
 			//si, esta bien cerrado
@@ -169,11 +167,12 @@ int validate(char* text, char** errmsg) {
 	}
 	if (count > 0) {
 		// hay tags que no estan cerrados, ya que la "pila" sigue teniendo tags que no fueron cerrados
-		printf("hay tags sin cerrar, cant:%ld\n", count);
+		//printf("hay tags sin cerrar, cant:%ld\n", count);
 		write_error(3, pila[0], NULL, (int) pila[1], errmsg);
+		free(pila);
 		return 1;
 	}
 	printf("todo ok\n");
-	//free(pila);
+	free(pila);
 	return 0;
 }

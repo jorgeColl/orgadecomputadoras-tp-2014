@@ -1,0 +1,5 @@
+<hola>xxx
+	<como>xxx
+		<\yaaaa>xxx
+	<\como>xxx
+<\hola>
