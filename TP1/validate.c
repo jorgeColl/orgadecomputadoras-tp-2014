@@ -17,9 +17,9 @@
  * abrio: posicion inicial del tag1
  * cerro: posicion inicial del tag2
  */
-bool comparar_tags(char* abrio, char* cerro) {
+int compare_tags(char* abrio, char* cerro) {
 	if(abrio==NULL){
-		return false;
+		return 0;
 	}
 	// desplazamiento que voy haciendo para comparar los dos tags
 	long desplazamiento = 0;
@@ -29,22 +29,15 @@ bool comparar_tags(char* abrio, char* cerro) {
 		if (abrio [desplazamiento] != cerro [desplazamiento]) {
 			// error los tags tienen distintas letras
 			printf("los tags tienen distintas letras: %c,%c\n",abrio[desplazamiento],cerro[desplazamiento]);
-			return false;
+			return 0;
 		}
 		desplazamiento++;
 	}
-	if (abrio[desplazamiento] == '>' && cerro [desplazamiento] != '>') {
-		// error el tag que abria es mas chico que el tag que cierra
-		printf("el tag que abria es mas chico que el tag que cierra\n");
-		return false;
-	}
-	if (abrio [desplazamiento] != '>' && cerro[desplazamiento] == '>') {
-		// error el tag que abria es mas grande que el tag que cierra
-		printf("el tag que abria es mas grande que el tag que cierra\n");
-		return false;
+	if(abrio[desplazamiento] != '>' || cerro [desplazamiento] != '>'){
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
 
 void print_tag(char* tag, char** errmsg) {
@@ -57,6 +50,13 @@ void print_tag(char* tag, char** errmsg) {
 	(*errmsg)[tam] = '\0';
 }
 
+void print_tag(char* tag) {
+	while(*tag != '>'){
+		printf("%c",*tag);
+		tag++;
+	}
+	printf("\n");
+}
 // funcion auxiliar de validate, tambien implementada en assembly
 // TODO terminar de implementar correctamente
 void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char** errmsg) {
@@ -89,7 +89,7 @@ void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char*
 bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 	int i;
 	for (i = 0; i < count; i++) {
-		bool tags_son_iguales = comparar_tags(pila[i], cerro);
+		bool tags_son_iguales = compare_tags(pila[i], cerro);
 		if(tags_son_iguales){
 			return false;
 		}
@@ -109,12 +109,12 @@ int validate(char* text, char** errmsg) {
 
 	int i=0;
 	while (text[i] != '\0') {
-		if(text[i]=='\n'){
+		if (text[i] == '\n') {
 			nro_linea++;
 		}
 		if (text[i] == '<' && text[i+1]!='\\') {
 			printf("encontre abierto ");
-			print_tag(&text[i]);
+			print_tag(&text[i+1]);
 			// guardo posicion en donde esta el inicio del tag
 			count++;
 			pila[2 * (count - 1)] = &text[i+1];
@@ -134,16 +134,16 @@ int validate(char* text, char** errmsg) {
 			printf("encontre cerrado ");
 			print_tag(cerro);
 
-			bool son_iguales = comparar_tags(abrio, cerro);
+			bool son_iguales = compare_tags(abrio, cerro);
 
 			if (son_iguales == false) {
 				// veo si el error es de tags sin abrir o de tags mal anidados
-				bool bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila);
+				int bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila);
 
-				if(bool_es_tag_sin_abrir) {
-					write_error(1,abrio,cerro,nro_linea,errmsg);
-				}else{
-					write_error(2,abrio,cerro,nro_linea,errmsg);
+				if (bool_es_tag_sin_abrir) {
+					write_error(1, abrio, cerro, nro_linea, errmsg);
+				} else {
+					write_error(2, abrio, cerro, nro_linea, errmsg);
 				}
 				return 1;
 			}
@@ -155,7 +155,8 @@ int validate(char* text, char** errmsg) {
 	if (count > 0) {
 		// hay tags que no estan cerrados, ya que la "pila" sigue teniendo tags que no fueron cerrados
 		printf("hay tags sin cerrar, cant:%ld\n", count);
-		write_error(3,pila[0],NULL,(int)pila[1],errmsg);
+		write_error(3, pila[0], NULL, (int) pila[1], errmsg);
+		return 1;
 	}
 	printf("todo ok\n");
 	//free(pila);

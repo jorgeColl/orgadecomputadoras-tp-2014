@@ -17,7 +17,7 @@
 #		* a0:tipo_de_error
 #		* a1:pos_tag1
 #		* a2:pos_tag2
-		* a3:nro_linea
+#		* a3:nro_linea
 #		* :errmsg
 #
 #	Stack Frame:
@@ -26,7 +26,7 @@
 #
 #
 #
-# - int comparar_tags(int abrio, int cerro, char* text);
+# - int comparar_tags(char* abrio, char* cerro);
 #   Argumentos:
 # 		* a0: abrio
 #		* a1: cerro
