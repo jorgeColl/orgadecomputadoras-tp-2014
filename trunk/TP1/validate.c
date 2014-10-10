@@ -125,8 +125,9 @@ int validate(char* text, char** errmsg) {
 			nro_linea++;
 		}
 		if (text[i] == '<' && text[i+1]!='\\') {
-			printf("encontre abierto ");
-			print_tagg(&text[i+1]);
+
+			//printf("encontre abierto ");
+			//print_tagg(&text[i+1]);
 			// guardo posicion en donde esta el inicio del tag
 			count++;
 			pila[2 * (count - 1)] = &text[i+1];
@@ -143,8 +144,8 @@ int validate(char* text, char** errmsg) {
 			char* cerro = &text[i + 2];
 
 			// solo para debug
-			printf("encontre cerrado ");
-			print_tagg(cerro);
+			//printf("encontre cerrado ");
+			//print_tagg(cerro);
 
 			bool son_iguales = compare_tags(abrio, cerro);
 
@@ -167,7 +168,6 @@ int validate(char* text, char** errmsg) {
 	}
 	if (count > 0) {
 		// hay tags que no estan cerrados, ya que la "pila" sigue teniendo tags que no fueron cerrados
-		//printf("hay tags sin cerrar, cant:%ld\n", count);
 		write_error(3, pila[0], NULL, (int) pila[1], errmsg);
 		free(pila);
 		return 1;
