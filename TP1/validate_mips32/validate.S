@@ -54,7 +54,7 @@ continuar1:		beq		t5,MENOR,encontre_tag	#si es '<' entonces es un tag
 
 
 
-				addiu	t1,t1,1				#aumento en 1 el puntero al archivo cargado en mem
+continuar2:		addiu	t1,t1,1				#aumento en 1 el puntero al archivo cargado en mem
 				lb		t5,0(t1)			#cargo la siguiente letra del texto
 				b		loop_general
 				
@@ -64,19 +64,49 @@ incrementar_linea:
 				addiu	t4,t4,1
 				b		continuar1
 
-encontre_tag:	lb		t5,1(t1)
+encontre_tag:	addiu	t1,t1,1						#muevo el puntero una letra despues de '<'
+				lb		t5,0(t1)					#cargo la letra que apunta el puntero de texto
 				beq		t5,BINVERT,es_tag_cierre	#si despues de < viene \ entonces es de cierre
-													#desde aca se que es un tag de abertura
-				li	 	v0,777		#TESTINGG
-				b		exit		#TESTINGG
+				
+													#Desde aca se que es un TAG DE ABERTURA
+													
+				subu	fp,fp,4						#hago lugar en el stack para guardar el puntero al inicio del tag de abertura
+				sw		t1,0(fp)					#guardo el puntero en el stack
+				addiu	t3,t3,1						#aumento en 1 el count
+				subu	fp,fp,4						#hago lugar en el stack para guardar el numero de linea del tag de abertura
+				sw		t4,0(fp)					#guardo el numero de linea en el stack
+				addiu	t3,t3,1						#aumento en 1 el count
+				b		continuar2					#sigo en el bucle principal
 				
 es_tag_cierre:
-				li	 	v0,-111		#TESTINGG
-				b		exit		#TESTINGG
-fin_archivo:
-				move 	v0,t4
+				lw		t6,4(fp)					#cargo direccion del ultimo tag abierto SIN INCLUIR EL '<'
+				
+				#TESTINGG
+				#TESTINGG   [AQUI LLAMAR A FUNCION compare_tags(t6 , t1) -> v0 (int  0 si no son iguales, 1 si son iguales)
+				#TESTINGG
+				
+				li		v0,0		#TESTINGG		ASUMO QUE ME DEVOLVIO IGUALES
+				
+				beq		v0,1,tag_malo
+													#Desde aca los tags son iguales
+				subu	t3,t3,2						#disminuyo el count en 2
+				addiu	fp,fp,8						#disminuyo de tamaño el stack en 2 elementos
+				b		continuar2
+
+tag_malo:		
+				li		v0,-999		#TESTINGG
 				b 		exit
-		
+
+fin_archivo:
+				bne		t3,0,tags_sin_cerrar		#si count es mayor que 0, quiere decir que hay un tag que no se cerro
+				li		v0,63		#TESTINGG
+				b 		exit
+
+tags_sin_cerrar:
+				#[  AQUI LLAMAR A write_error(3,-aaaaa-,X,t4,t2); ]
+				li		v0,1
+				b		exit
+
 exit:
 				lw		gp,O_GP(sp)
 				lw		fp,O_FP(sp)

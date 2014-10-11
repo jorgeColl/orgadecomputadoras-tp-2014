@@ -18,10 +18,10 @@ void aux (char* x,char* y,int esperado){
 #define DISTINTOS 0
 #define IGUALES 1
 int main(int argc,char **argv) {
-	char* a ="<aaaaaa>";
-	char* b ="<bbbbbb>";
-	char* c ="<aaaaaac>";
-	char* d ="<aa>";
+	char* a ="aaaaaa>";
+	char* b ="bbbbbb>";
+	char* c ="aaaaaac>";
+	char* d ="aa>";
 	
 	
 	aux(NULL,a,DISTINTOS);

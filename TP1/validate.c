@@ -100,7 +100,7 @@ void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char*
 
 bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 	int i;
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count; i+=2) {
 		bool tags_son_iguales = compare_tags(pila[i], cerro);
 		if(tags_son_iguales){
 			return false;
@@ -111,7 +111,7 @@ bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
 
 int validate(char* text, char** errmsg) {
 	// esta pila va a ser el sp en assembly por lo que no vamos a tener que preocuparnos por su tamaño
-	char** pila = malloc(sizeof(char*)*strlen(text));
+	char** pila = malloc(sizeof(char*) * strlen(text));
 
 	//count cantida de tags abiertos
 	long count = 0;
@@ -119,53 +119,59 @@ int validate(char* text, char** errmsg) {
 	//numero de linea
 	int nro_linea = 0;
 
-	int i=0;
+	int i = 0;
 	while (text[i] != '\0') {
 		if (text[i] == '\n') {
 			nro_linea++;
 		}
-		if (text[i] == '<' && text[i+1]!='\\') {
+		if (text[i] == '<') {
+			i++;
+			if (text[i] != '\\') {
+				//printf("encontre abierto ");
+				//print_tagg(&text[i+1]);
 
-			//printf("encontre abierto ");
-			//print_tagg(&text[i+1]);
-			// guardo posicion en donde esta el inicio del tag
-			count++;
-			pila[2 * (count - 1)] = &text[i+1];
-			// no importa este warning
-			pila[(2 * (count - 1)) + 1] = nro_linea;
+				// guardo posicion en donde esta el inicio del tag
+				pila[count] = &text[i];
+				count++;
+				// no importa este warning
+				pila[count] = nro_linea;
+				count++;
 
-		} else if (text[i] == '<' && text[i + 1] == '\\') {
-			// verifico que este bien cerrado
+			} else {
+				// verifico que este bien cerrado
 
-			// pos donde se abrio el tag
-			char* abrio = pila[2*(count - 1)];
+				// pos donde se abrio el tag
+				char* abrio = pila[count - 2];
 
-			//pos donde empieza el tag que cierra
-			char* cerro = &text[i + 2];
+				i++;
+				//pos donde empieza el tag que cierra
+				char* cerro = &text[i];
 
-			// solo para debug
-			//printf("encontre cerrado ");
-			//print_tagg(cerro);
+				// solo para debug
+				//printf("encontre cerrado ");
+				//print_tagg(cerro);
 
-			bool son_iguales = compare_tags(abrio, cerro);
+				bool son_iguales = compare_tags(abrio, cerro);
 
-			if (son_iguales == false) {
-				// veo si el error es de tags sin abrir o de tags mal anidados
-				int bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila);
+				if (son_iguales == false) {
+					// veo si el error es de tags sin abrir o de tags mal anidados
+					int bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila);
 
-				if (bool_es_tag_sin_abrir) {
-					write_error(1, abrio, cerro, nro_linea, errmsg);
-				} else {
-					write_error(2, abrio, cerro, nro_linea, errmsg);
+					if (bool_es_tag_sin_abrir) {
+						write_error(1, abrio, cerro, nro_linea, errmsg);
+					} else {
+						write_error(2, abrio, cerro, nro_linea, errmsg);
+					}
+					free(pila);
+					return 1;
 				}
-				free(pila);
-				return 1;
+				//si, esta bien cerrado
+				count-=2;
 			}
-			//si, esta bien cerrado
-			count--;
 		}
 		i++;
 	}
+
 	if (count > 0) {
 		// hay tags que no estan cerrados, ya que la "pila" sigue teniendo tags que no fueron cerrados
 		write_error(3, pila[0], NULL, (int) pila[1], errmsg);

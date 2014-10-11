@@ -19,9 +19,9 @@ void aux (char* y, int esperado){
 #define BIENXML 1
 
 int main(int argc,char **argv) {
-	char* a ="<\naa\naaa\n>";
-	char* b ="<\\bbbbbb>";
-	char* c ="<aaaaaac>";
+	char* a ="<aa\naaa\n>";
+	char* b ="<z><\\bbbbbb>";
+	char* c ="<aaaaaac><\\aaaaaac>";
 	char* d ="<aa>";
 	
 	/*aux(a,BIENXML);
@@ -30,8 +30,12 @@ int main(int argc,char **argv) {
 	aux(d,MALXML);*/
 	char* errmsg = NULL;
 	int resultado = validate(a, &errmsg);
-	printf("%d\n",resultado);
+	printf("%s resultado:%d\n",a,resultado);
 	resultado = validate(b, &errmsg);
-	printf("%d\n",resultado);
+	printf("%s resultado:%c\n",b,(char)resultado);
+	resultado = validate(c, &errmsg);
+	printf("%s resultado:%c\n",c,(char)resultado);
+	resultado = validate(d, &errmsg);
+	printf("%s resultado:%d\n",d,resultado);
 	return 0;
 }
