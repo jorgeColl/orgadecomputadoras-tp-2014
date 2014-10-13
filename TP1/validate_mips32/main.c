@@ -19,23 +19,39 @@ void aux (char* y, int esperado){
 #define BIENXML 1
 
 int main(int argc,char **argv) {
-	char* a ="<aa\naaa\n>";
-	char* b ="<z><\\bbbbbb>";
-	char* c ="<aaaaaac><\\aaaaaac>";
-	char* d ="<aa>";
+	
+	
+	//char* a ="<sss><\\sss>"; DIOS SANTO PODEROSO, NO PUEDO HUMANAMENTE COMPRENDER PORQUE SI DESCOMENTO ESTA LINEA,
+	// EL PRINT DE UNA DE LAS PRUEBAS NO ANDA, Y LA PRUEBA TAMBIEN DA CUALQUIER COSA
+	// mmm podria ser por el parche asqueroso que use adentro del assembly
+	char* b ="<z><d><fofo><pepe><\\bbbbbb>";
+	char* c ="<abaaaac><\\abaaaac><zzz><\\zz>";
+	char* d ="<aza><sese><sisi>";
+	char* e ="<\\aaaa>";
+	
+	
 	
 	/*aux(a,BIENXML);
 	aux(b,MALXML);
 	aux(c,MALXML);
 	aux(d,MALXML);*/
+	
 	char* errmsg = NULL;
-	int resultado = validate(a, &errmsg);
-	printf("%s resultado:%d\n",a,resultado);
+	int resultado;
+	//int resultado = validate(a, &errmsg);
+	//printf("PRUEBA 1: %s resultado:%d\n",a,resultado);
+	
 	resultado = validate(b, &errmsg);
-	printf("%s resultado:%c\n",b,(char)resultado);
+	printf("PRUEBA 2: %s resultado:%d\n",b,resultado);
+	
 	resultado = validate(c, &errmsg);
-	printf("%s resultado:%c\n",c,(char)resultado);
+	printf("PRUEBA 3: %s resultado:%d\n",c,resultado);
+	
 	resultado = validate(d, &errmsg);
-	printf("%s resultado:%d\n",d,resultado);
+	printf("PRUEBA 4: %s resultado:%d\n",d,resultado);
+	
+	resultado = validate(e, &errmsg);
+	printf("PRUEBA 5: %s resultado:%d\n",e,resultado);
+
 	return 0;
 }
