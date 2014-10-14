@@ -26,8 +26,8 @@
 #define	VA_O_FP				VA_SRA_POS_INI + 4
 #define	VA_O_GP				VA_SRA_POS_INI + 0
 
-#define VA_O_ARG0				(VA_STACK_SIZE)
-#define VA_O_ARG1				((VA_STACK_SIZE) + 4)
+#define VA_O_ARG0			(VA_STACK_SIZE)
+#define VA_O_ARG1			((VA_STACK_SIZE) + 4)
 
 	/* int validate(char* text, char** errmsg);	*/
 	.text
@@ -138,28 +138,79 @@ es_tag_cierre:
 				addiu	fp,fp,8						#disminuyo de tamaño el stack en 2 elementos
 				
 				b		continuar2
+	
+								
+tag_malo:		#ACA AVERIGUA QUE TIPO DE ERROR ES, TAG_MAL ANIDADO O TAG_SIN_ABRIR
+			
+tag_malo_loop:	beqz	t3,tag_sin_abrir
 				
-tag_sin_abrir:
-				li		v0,-222		#TESTINGG
-				b		exit
+				subu	t3,t3,2						#disminuyo el count en 2
+				addiu	fp,fp,4						#fp ahora tiene en 0 a la dir del tag que abre
+				lw		t6,0(fp)					#cargo direccion del ultimo tag abierto SIN INCLUIR EL '<'
 				
-tag_malo:		
-				li		v0,-999		#TESTINGG
-				b 		exit
+				#COPYPASTE DE LO DE ARRIBA
 				
-				#FALTA IMPLEMENTAR QUE TIPO DE ERROR HAY (TAG_MAL ANIDADO O TAG_SIN_ABRIR)
-				#[AQUI LLAMAR A FUNCION compare_tags(t6 , t1) -> v0 (int  0 si no son iguales, 1 si son iguales)
+				sw		t1,VA_LTA_POS_INI(sp)
+				sw		t2,VA_LTA_POS_INI + 4(sp)
+				sw		t3,VA_LTA_POS_INI + 8(sp)
+				sw		t4,VA_LTA_POS_INI + 12(sp)
+				sw		t5,VA_LTA_POS_INI + 16(sp)
+				sw		t6,VA_LTA_POS_INI + 20(sp)
+				
+				
+				#OJO MIRAR DE CERCA FP Y SP, DEBIDO A QUE FP CRECE SIN UN TAMAÑO ESPECIFICADO
+				
+				subu	fp,fp,8			#PARCHE TEMPORAL
+				sw		sp,0(fp)		#PARCHE TEMPORAL
+				sw		gp,4(fp)		#PARCHE TEMPORAL
+				subu	fp,fp,16 		#PARCHE TEMPORAL
+				move	sp,fp 			#PARCHE TEMPORAL
+				
+				move	a0,t6
+				move	a1,t1
+				jal		compare_tags    #compare_tags(t6 , t1) -> v0 (int 0 si no son iguales, 1 si son iguales)
+				
+				
+				addiu	fp,fp,16		#PARCHE TEMPORAL
+				lw		sp,0(fp)		#PARCHE TEMPORAL
+				lw		gp,4(fp)		#PARCHE TEMPORAL
+				addiu	fp,fp,8			#PARCHE TEMPORAL
+				
+				
+				lw		t1,VA_LTA_POS_INI(sp)
+				lw		t2,VA_LTA_POS_INI + 4(sp)
+				lw		t3,VA_LTA_POS_INI + 8(sp)
+				lw		t4,VA_LTA_POS_INI + 12(sp)
+				lw		t5,VA_LTA_POS_INI + 16(sp)
+				lw		t6,VA_LTA_POS_INI + 20(sp)
+				
+				#FIN DE COPYPASTE DE LO DE ARRIBA
+				
+				beq		v0,1,tags_mal_anidado
+				addiu	fp,fp,4	
+				b		tag_malo_loop
+				
 
 fin_archivo:
 				bnez	t3,tags_sin_cerrar		#si count es mayor que 0, quiere decir que hay un tag que no se cerro
-				li		v0,1
+				li		v0,1					#wiii EL XML ESTA BIEN !!!!
 				b 		exit
-
+				
+tag_sin_abrir:
+				#[  AQUI LLAMAR A write_error(1, abrio = t6, cerro = t1, nro_linea = t4, errmsg = t2);
+				li		v0,-222		#TESTINGG
+				b		exit
+				
 tags_sin_cerrar:
-				#[  AQUI LLAMAR A write_error(3,-aaaaa-,X,t4,t2); ]
+				#[  AQUI LLAMAR A write_error(3, pila[0] = ?, NULL, (int) pila[1] = ?, errmsg = t2);
 				li		v0,-888		#TESTINGG
 				b		exit
 
+tags_mal_anidado:
+				#[  AQUI LLAMAR A write_error(2, abrio = t6, cerro = t1, nro_linea = t4, errmsg = t2); ]
+				li		v0,-111		#TESTINGG
+				b		exit
+				
 exit:			
 				lw		ra,VA_RA(sp)
 				lw		gp,VA_O_GP(sp)

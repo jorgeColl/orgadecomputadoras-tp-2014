@@ -99,12 +99,19 @@ void write_error(int tipo_de_error, char* tag1, char* tag2, int nro_linea, char*
 
 
 bool es_tag_sin_abrir(char* cerro, int count, char* pila[]) {
-	int i;
+	/*int i;
 	for (i = 0; i < count; i+=2) {
 		bool tags_son_iguales = compare_tags(pila[i], cerro);
 		if(tags_son_iguales){
 			return false;
 		}
+	}*/
+	while (count != 0) {
+		bool tags_son_iguales = compare_tags(pila[count-2], cerro);
+		if (tags_son_iguales) {
+			return false;
+		}
+		count -= 2;
 	}
 	return true;
 }
@@ -154,14 +161,19 @@ int validate(char* text, char** errmsg) {
 				bool son_iguales = compare_tags(abrio, cerro);
 
 				if (son_iguales == false) {
-					// veo si el error es de tags sin abrir o de tags mal anidados
-					int bool_es_tag_sin_abrir = es_tag_sin_abrir(cerro, count, pila);
-
-					if (bool_es_tag_sin_abrir) {
-						write_error(1, abrio, cerro, nro_linea, errmsg);
-					} else {
-						write_error(2, abrio, cerro, nro_linea, errmsg);
+					// ve si es tagl mal anidado o tag sin abrir
+					while (count != 0) {
+						count -= 2;
+						bool tags_son_iguales = compare_tags(pila[count], cerro);
+						if (tags_son_iguales) {
+							//es tag mal anidado
+							write_error(2, abrio, cerro, nro_linea, errmsg);
+							free(pila);
+							return 1;
+						}
 					}
+					// es tag sin abrir
+					write_error(1, abrio, cerro, nro_linea, errmsg);
 					free(pila);
 					return 1;
 				}
