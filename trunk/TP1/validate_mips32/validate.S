@@ -30,6 +30,15 @@
 #define VA_O_ARG1			((VA_STACK_SIZE) + 4)
 
 	/* int validate(char* text, char** errmsg);	*/
+	# uso de registros
+	# t1 puntero a texto
+	# t2 mensaje error
+	# t3 count
+	# t4 nro_linea
+	# t5 caracter actual texto
+	# t6 puntero a abrio
+	# t7 temporal
+	
 	.text
 	.align 	2
 	.globl	validate
@@ -92,9 +101,10 @@ encontre_tag:	addiu	t1,t1,1						#muevo el puntero una letra despues de '<'
 es_tag_cierre:
 				addiu	t1,t1,1						#muevo el puntero una letra despues de '\'
 				beqz	t3,tag_sin_abrir			#si no hay ningun tag abierto entonces count=0
-			######################    EXPERIMENTAL   ###########################################
 				lw		t6,4(fp)					#cargo direccion del ultimo tag abierto SIN INCLUIR EL '<'
 				
+				#INICIO de guardado de registros
+				#guardo los temporales antes de realizar la llamada
 				sw		t1,VA_LTA_POS_INI(sp)
 				sw		t2,VA_LTA_POS_INI + 4(sp)
 				sw		t3,VA_LTA_POS_INI + 8(sp)
@@ -102,25 +112,23 @@ es_tag_cierre:
 				sw		t5,VA_LTA_POS_INI + 16(sp)
 				sw		t6,VA_LTA_POS_INI + 20(sp)
 				
-				
-				#OJO MIRAR DE CERCA FP Y SP, DEBIDO A QUE FP CRECE SIN UN TAMAÑO ESPECIFICADO
-				
-				subu	fp,fp,8			#PARCHE TEMPORAL
-				sw		sp,0(fp)		#PARCHE TEMPORAL
-				sw		gp,4(fp)		#PARCHE TEMPORAL
-				subu	fp,fp,16 		#PARCHE TEMPORAL
-				move	sp,fp 			#PARCHE TEMPORAL
+				#guardo fp , gp y ra antes de realizar la llamada
+				subu	fp,fp,8			
+				sw		sp,0(fp)		
+				sw		gp,4(fp)		
+				subu	fp,fp,16 		
+				move	sp,fp 			
+				#FIN de guardado de registros
 				
 				move	a0,t6
 				move	a1,t1
 				jal		compare_tags    #compare_tags(t6 , t1) -> v0 (int 0 si no son iguales, 1 si son iguales)
 				
-				
-				addiu	fp,fp,16		#PARCHE TEMPORAL
-				lw		sp,0(fp)		#PARCHE TEMPORAL
-				lw		gp,4(fp)		#PARCHE TEMPORAL
-				addiu	fp,fp,8			#PARCHE TEMPORAL
-				
+				#INICIO de recarga de registros guardados
+				addiu	fp,fp,16		
+				lw		sp,0(fp)		
+				lw		gp,4(fp)		
+				addiu	fp,fp,8			
 				
 				lw		t1,VA_LTA_POS_INI(sp)
 				lw		t2,VA_LTA_POS_INI + 4(sp)
@@ -128,10 +136,9 @@ es_tag_cierre:
 				lw		t4,VA_LTA_POS_INI + 12(sp)
 				lw		t5,VA_LTA_POS_INI + 16(sp)
 				lw		t6,VA_LTA_POS_INI + 20(sp)
-				
-				
-				
-		######################    EXPERIMENTAL   ###########################################
+				#FIN de recarga de registros
+		
+		
 				beq		v0,0,tag_malo
 								#Desde aca los tags son iguales
 				subu	t3,t3,2						#disminuyo el count en 2
@@ -140,7 +147,7 @@ es_tag_cierre:
 				b		continuar2
 	
 								
-tag_malo:		#ACA AVERIGUA QUE TIPO DE ERROR ES, TAG_MAL ANIDADO O TAG_SIN_ABRIR
+tag_malo:		#ACA AVERIGUA QUE TIPO DE ERROR ES, TAG_MAL_ANIDADO O TAG_SIN_ABRIR
 			
 tag_malo_loop:	beqz	t3,tag_sin_abrir
 				
@@ -150,6 +157,8 @@ tag_malo_loop:	beqz	t3,tag_sin_abrir
 				
 				#COPYPASTE DE LO DE ARRIBA
 				
+				#INICIO de guardado de registros
+				#guardo los temporales antes de realizar la llamada
 				sw		t1,VA_LTA_POS_INI(sp)
 				sw		t2,VA_LTA_POS_INI + 4(sp)
 				sw		t3,VA_LTA_POS_INI + 8(sp)
@@ -157,25 +166,23 @@ tag_malo_loop:	beqz	t3,tag_sin_abrir
 				sw		t5,VA_LTA_POS_INI + 16(sp)
 				sw		t6,VA_LTA_POS_INI + 20(sp)
 				
-				
-				#OJO MIRAR DE CERCA FP Y SP, DEBIDO A QUE FP CRECE SIN UN TAMAÑO ESPECIFICADO
-				
-				subu	fp,fp,8			#PARCHE TEMPORAL
-				sw		sp,0(fp)		#PARCHE TEMPORAL
-				sw		gp,4(fp)		#PARCHE TEMPORAL
-				subu	fp,fp,16 		#PARCHE TEMPORAL
-				move	sp,fp 			#PARCHE TEMPORAL
+				#guardo fp , gp y ra antes de realizar la llamada
+				subu	fp,fp,8			
+				sw		sp,0(fp)		
+				sw		gp,4(fp)		
+				subu	fp,fp,16 		
+				move	sp,fp 			
+				#FIN de guardado de registros
 				
 				move	a0,t6
 				move	a1,t1
 				jal		compare_tags    #compare_tags(t6 , t1) -> v0 (int 0 si no son iguales, 1 si son iguales)
 				
-				
-				addiu	fp,fp,16		#PARCHE TEMPORAL
-				lw		sp,0(fp)		#PARCHE TEMPORAL
-				lw		gp,4(fp)		#PARCHE TEMPORAL
-				addiu	fp,fp,8			#PARCHE TEMPORAL
-				
+				#INICIO de recarga de registros guardados
+				addiu	fp,fp,16		
+				lw		sp,0(fp)		
+				lw		gp,4(fp)		
+				addiu	fp,fp,8			
 				
 				lw		t1,VA_LTA_POS_INI(sp)
 				lw		t2,VA_LTA_POS_INI + 4(sp)
@@ -183,6 +190,7 @@ tag_malo_loop:	beqz	t3,tag_sin_abrir
 				lw		t4,VA_LTA_POS_INI + 12(sp)
 				lw		t5,VA_LTA_POS_INI + 16(sp)
 				lw		t6,VA_LTA_POS_INI + 20(sp)
+				#FIN de recarga de registros
 				
 				#FIN DE COPYPASTE DE LO DE ARRIBA
 				
@@ -204,6 +212,7 @@ tag_sin_abrir:
 tags_sin_cerrar:
 				lw		t4,0(fp)				#cargo el numero de linea en donde esta el tag que no fue cerrado
 				lw		t6,4(fp)				#cargo la posicion en donde empieza el tag que no fue cerrado
+				
 				#[  AQUI LLAMAR A write_error(3, abrio = t6, NULL, nro_linea = t4, errmsg = t2);
 				li		v0,-888		#TESTINGG
 				b		exit
@@ -214,7 +223,6 @@ tags_mal_anidado:
 				b		exit
 				
 exit:			
-				move	v0,t4
 				lw		ra,VA_RA(sp)
 				lw		gp,VA_O_GP(sp)
 				lw		fp,VA_O_FP(sp)
