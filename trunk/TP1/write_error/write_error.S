@@ -59,8 +59,9 @@ pedir_memoria:
 		/* 	void *mymalloc(size_t) */
 		move	a0,s1				#guardo el tamaño del tag en a0
 		jal		mymalloc			#llamo a mymalloc
-		lw		s2, 0(s4)			#desreferencio puntero a puntero a errmsg
-		move	s2, v0				#asigno el puntero obtenido al (*errmsg) #??
+		#lw		s2, 0(s4)			#desreferencio puntero a puntero a errmsg
+		#move	s2, v0				#asigno el puntero obtenido al (*errmsg) #??
+		sw		v0,0(s4)
 		###################################
 
 tipo_error:
