@@ -1,0 +1,13 @@
+
+<haaaa>xxxx
+	<bien>xxxx
+		<y>xxxx
+		
+			<vos>xxxx
+				<como>
+					<te vaaaa>xxxx<\te vaaaa>	
+				<\como>
+			<\vos>xxxx
+		
+		<\y>xxxx
+	<\bien>xxxx

@@ -202,7 +202,9 @@ tag_sin_abrir:
 				b		exit
 				
 tags_sin_cerrar:
-				#[  AQUI LLAMAR A write_error(3, pila[0] = ?, NULL, (int) pila[1] = ?, errmsg = t2);
+				lw		t4,0(fp)				#cargo el numero de linea en donde esta el tag que no fue cerrado
+				lw		t6,4(fp)				#cargo la posicion en donde empieza el tag que no fue cerrado
+				#[  AQUI LLAMAR A write_error(3, abrio = t6, NULL, nro_linea = t4, errmsg = t2);
 				li		v0,-888		#TESTINGG
 				b		exit
 
@@ -212,6 +214,7 @@ tags_mal_anidado:
 				b		exit
 				
 exit:			
+				move	v0,t4
 				lw		ra,VA_RA(sp)
 				lw		gp,VA_O_GP(sp)
 				lw		fp,VA_O_FP(sp)

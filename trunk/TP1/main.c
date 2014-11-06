@@ -65,11 +65,11 @@ int main(int argc, char **argv) {
 	switch (c) {
 	case 'h':
 		printf("%s", mensaje_de_ayuda);
-		exit(EXIT_SUCCESS);
+		return EXIT_SUCCESS;
 
 	case 'v':
 		printf("Version 1.00\n");
-		exit(EXIT_SUCCESS);
+		return EXIT_SUCCESS;
 
 	case 'i':
 		if (optarg[0] == '-' && optarg[1] == '\0') {
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 			if (fd == NULL) {
 				fprintf(stderr, "%s", "error al abrir el archivo\n");
 				perror("");
-				exit(EXIT_FAILURE);
+				return EXIT_FAILURE;
 			}
 		}
 

@@ -1,0 +1,11 @@
+
+<asado>lalala
+
+	<lalalomlomlomlomlomlilom>bobmarley<\lalalomlomlomlomlomlilom>
+	<a>1111111<\a>
+	<b>22222<\b> <x>lalala<\x><y>lalala<\y><z>lalala<\z><w>lalala<\w><i>lalala<\i>
+	
+
+	lalala
+	<coco>lalala<\coco>lalala
+<\asado>
