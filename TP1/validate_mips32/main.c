@@ -1,15 +1,11 @@
 #include <unistd.h>
 #include <stdio.h>
-
-int validate(char* text, char** errmsg);
-
-#define MALXML 0
-#define BIENXML 1
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <stdbool.h>
+
+int validate(char* text, char** errmsg);
 
 
 static struct option long_options[] = {
@@ -94,7 +90,7 @@ int main(int argc, char **argv) {
 	printf("resultado: %d\n",resultado);
 	//if(resultado == 1){
 	//	fprintf(stderr,"%s",error);
-	//	free(error);
+	//	myfree(error);
 	//}
 	free(buff);
 	return resultado;
