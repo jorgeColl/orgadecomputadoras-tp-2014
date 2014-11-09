@@ -6,7 +6,7 @@
 #include <stdbool.h>
 
 int validate(char* text, char** errmsg);
-
+void myfree(void* error);
 
 static struct option long_options[] = {
 		/* para cada opcion, se registra si necesita argumento y que letra devuelve getopt_long(), en caso
@@ -83,15 +83,24 @@ int main(int argc, char **argv) {
 	default:
 		break;
 	}
+	
+	/*fd = fopen("b.txt", "r");
+	if (fd == NULL) {
+		fprintf(stderr, "%s", "error al abrir el archivo\n");
+		perror("");
+		return EXIT_FAILURE;
+	}*/
+	
 	char* buff = cargar_archivo(fd);
 	char* error = NULL;
-	
+	// resultado = 0 en caso de que tag fuesen correctos, 1 en caso contrario
 	int resultado = validate(buff,&error);
 	printf("resultado: %d\n",resultado);
-	//if(resultado == 1){
-	//	fprintf(stderr,"%s",error);
-	//	myfree(error);
-	//}
+	printf("%s\n",error);
+	if(resultado == 1){
+		fprintf(stderr,"%s",error);
+		myfree(error);
+	}
 	free(buff);
 	return resultado;
 		
